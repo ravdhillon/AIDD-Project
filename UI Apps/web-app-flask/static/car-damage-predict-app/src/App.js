@@ -2,16 +2,16 @@ import React from 'react';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import SimpleForm from './components/SimpleForm/simple-form.js';
-import logo from './logo.svg';
 import './App.css';
-import ImageSelector from './components/ImageSelector/image-selector.js';
+
+import PageContainer  from './components/PageContainer/page-container.js';
 
 function App() {
   return (
     <div className="App">
       <div className="container-fluid">
-        <ImageSelector />
+        <h3>Auto Damage Classifier</h3>        
+        <PageContainer />
       </div>
     </div>
   );

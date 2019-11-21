@@ -4,7 +4,8 @@ import io
 import os
 import base64
 import cv2
-
+import pickle
+from PIL import Image
 import tensorflow as tf
 from tensorflow.python.keras.backend import set_session
 from keras.models import Sequential
@@ -39,23 +40,28 @@ def get_model():
     global model
     global graph
     global sess
+    global mlb
     tf_config = tf.ConfigProto()
     sess = tf.Session(config=tf_config)
     set_session(sess)
     model_path = os.path.join(os.getcwd(), 'model', 'car-damage-multi-label-model.h5')
-    print(f'Model Path: {model_path}')
+    print('Loading Model ...')
     model = load_model(model_path)
     model._make_predict_function()
     graph = tf.compat.v1.get_default_graph()
     print(" Model Loaded ")
+    print()
+    print('Loading Pickle file...')
+    pickle_file = os.path.join(os.getcwd(), 'picklefiles', 'pickle')
+    mlb = pickle.loads(open(pickle_file, "rb").read())
 
 # preprocess the image to the format (resize, convert to numpy array) needed for the model.
 def preprocess_image(image, target_size):
     if image.mode != "RGB":
         image = image.convert("RGB")
     image = image.resize(target_size)
-    image = image.astype("float") / 255.0
     image = img_to_array(image)
+    image = image.astype("float") / 255.0
     image = np.expand_dims(image, axis=0)
     return image
 
@@ -66,12 +72,11 @@ get_model() #Load model in memory before the API call.
 def predict_damage():
     request_param = request.get_json(force=True)
     encoded_image = request_param['image']
-    print("Encoded Image: ", encoded_image)
     decoded_image = base64.b64decode(encoded_image)
-    image = Image.open(io.BytesIO(decoded_image))
-    print("Encoded Image: ", encoded_image)
-    processed_image = preprocess_image(image, target_size=(150, 150))
-    mlb_classes = ['damage','front','minor','moderate','rear','severe','side','whole']
+    PIL_image = Image.open(io.BytesIO(decoded_image))    
+    processed_image = preprocess_image(PIL_image, target_size=(150, 150))
+    predictions = []
+    count=0
     with graph.as_default():
         set_session(sess)
         print("Start Prediction")
@@ -80,12 +85,23 @@ def predict_damage():
         idxs = np.argsort(proba)[::-1][:2]
         print('idxs: ', idxs)
         for (i, j) in enumerate(idxs):
-            # build the label and draw the label on the image
-            label = "{}: {:.2f}%".format(mlb_classes[i], proba[i] * 100)
-            #cv2.putText(output, label, (10, (i * 30) + 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            # build the label
+            count = count + 1
+            label = "{}: {:.2f}%".format(mlb.classes_[j], proba[j] * 100)
 
         # show the probabilities for each of the individual labels
-        for (label, p) in zip(mlb_classes, proba):
+        for (label, p) in zip(mlb.classes_, proba):
             print("{}: {:.2f}%".format(label, p * 100))
-
-    return "OKAY"
+            json = {
+                'key': f'{label}',
+                'value': '{:.2f}%'.format(p * 100)
+            }
+            predictions.append(json)
+    response = {
+        'result': {
+            'count': count,
+            'predictions': predictions
+        }
+    }
+    print(response)
+    return jsonify(response)
