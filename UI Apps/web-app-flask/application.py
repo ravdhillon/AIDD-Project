@@ -17,17 +17,16 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 
-# Create instance of Flask App
-app = Flask(__name__)
-
-@app.route('/ping')
+# Create instance of Flask Application
+application = Flask(__name__)
+@application.route('/ping')
 def test():
     response = {
         'ping' : 'OK'
     }
     return response
 
-@app.route('/hello', methods=['POST'])
+@application.route('/hello', methods=['POST'])
 def hello():
     request_param = request.get_json(force=True)
     name = request_param['name']
@@ -41,8 +40,8 @@ def get_model():
     global graph
     global sess
     global mlb
-    tf_config = tf.ConfigProto()
-    sess = tf.Session(config=tf_config)
+    tf_config = tf.compat.v1.ConfigProto()
+    sess = tf.compat.v1.Session(config=tf_config)
     set_session(sess)
     model_path = os.path.join(os.getcwd(), 'model', 'car-damage-multi-label-model.h5')
     print('Loading Model ...')
@@ -68,7 +67,7 @@ def preprocess_image(image, target_size):
 print(" Loading Keras model ...")
 get_model() #Load model in memory before the API call.
 
-@app.route("/predict", methods=['POST'])
+@application.route("/predict", methods=['POST'])
 def predict_damage():
     request_param = request.get_json(force=True)
     encoded_image = request_param['image']
@@ -80,7 +79,7 @@ def predict_damage():
     with graph.as_default():
         set_session(sess)
         print("Start Prediction")
-        proba = model.predict(processed_image)[0]
+        proba = model_damage_whole.predict(processed_image)[0]
         print('Probs: ', proba)
         idxs = np.argsort(proba)[::-1][:2]
         print('idxs: ', idxs)
@@ -105,3 +104,7 @@ def predict_damage():
     }
     print(response)
     return jsonify(response)
+
+if __name__=="__main__":
+    application.debug = True
+    application.run()
