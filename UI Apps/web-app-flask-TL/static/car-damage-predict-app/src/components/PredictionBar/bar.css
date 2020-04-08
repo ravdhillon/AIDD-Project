@@ -1,0 +1,47 @@
+.damage {
+    background-color: red;
+}
+.whole {
+    background-color: green
+}
+
+.no-dent,
+.no-scratch,
+.no-smash {
+    background-color: yellowgreen
+}
+.side {
+    background-color: blue
+}
+.scratch {
+    background-color: orange
+}
+.dent {
+    background-color: orangered
+}
+.smash {
+    background-color: red
+}
+
+.bars {
+    margin-top: 10%;
+    margin-left: 10px;
+}
+
+.bar {
+    margin-top: 10px;
+    height: 20px;
+    color: #fff;
+    margin-bottom: 10px;
+    height: 20px;
+    color: #fff;
+    font-size: 14px;
+    letter-spacing: 1px;
+    font-variant-caps: all-small-caps;
+    padding: 0px 5px; 
+}
+.class-label {
+    margin-top: 5px;
+    letter-spacing: 1px;
+    font-variant-caps: all-petite-caps;
+}

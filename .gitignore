@@ -4,4 +4,8 @@
 # dependencies
 **/node_modules
 **/packages
+**/__pycache__
 *.log
+*.zip
+*.pem
+*.h5

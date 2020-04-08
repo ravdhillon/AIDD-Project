@@ -79,7 +79,7 @@ def predict_damage():
     with graph.as_default():
         set_session(sess)
         print("Start Prediction")
-        proba = model_damage_whole.predict(processed_image)[0]
+        proba = model.predict(processed_image)[0]
         print('Probs: ', proba)
         idxs = np.argsort(proba)[::-1][:2]
         print('idxs: ', idxs)
