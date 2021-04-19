@@ -1,1 +1,0 @@
-# AIDD Portfolio Project
